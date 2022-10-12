@@ -1,0 +1,214 @@
+plugins {
+    id "java"
+    id "checkstyle"
+    id "eclipse"
+}
+
+group "hu.openig"
+// TODO: Use version from Configuration.VERSION constant (or vice versa)
+version "0.95.232"
+
+sourceCompatibility = JavaVersion.VERSION_1_7
+targetCompatibility = JavaVersion.VERSION_1_7
+
+repositories {
+    mavenCentral()
+}
+
+sourceSets.main.java {
+    srcDirs("src")
+}
+
+compileJava {
+    options.encoding = "UTF-8"
+    options.compilerArgs += "-Xlint:unchecked,deprecation"
+    copy {
+        from("src") {
+            include "**/*.xml"
+            include "**/*.png"
+            include "**/*.gif"
+        }
+        into("${compileJava.destinationDir}")
+    }
+}
+
+task jarLauncher(type: Jar) {
+    group "build"
+    setArchiveFileName("open-ig-launcher.jar")
+    from(sourceSets.main.output) {
+        include "hu/openig/launcher/**",
+
+                "hu/openig/core/Func0.class",
+                "hu/openig/core/Func0E.class",
+
+                "hu/openig/gfx/button_medium*.png",
+                "hu/openig/gfx/checkmark*.png",
+                "hu/openig/gfx/down.png",
+                "hu/openig/gfx/english.png",
+                "hu/openig/gfx/french.png",
+                "hu/openig/gfx/german.png",
+                "hu/openig/gfx/hungarian.png",
+                "hu/openig/gfx/launcher_background.png",
+                "hu/openig/gfx/loading.png",
+                "hu/openig/gfx/russian.png",
+                "hu/openig/gfx/spanish.png",
+                "hu/openig/gfx/OpenIG_Splash_medium.png",
+
+                "hu/openig/render/GenericButtonRenderer.class",
+                "hu/openig/render/GenericMediumButton.class",
+                "hu/openig/render/RenderTools*.class",
+
+                "hu/openig/ui/IGButton.class",
+                "hu/openig/ui/IGCheckBox.class",
+
+                "hu/openig/utils/ConsoleWatcher*.class",
+                "hu/openig/utils/Exceptions.class",
+                "hu/openig/utils/ImageUtils.class",
+                "hu/openig/utils/IOUtils*.class",
+                "hu/openig/utils/Parallels*.class",
+                "hu/openig/utils/XElement*.class"
+    }
+    manifest {
+        from "${projectDir}/META-INF/MANIFEST.MF.launcher"
+    }
+}
+
+task jarMain(type: Jar) {
+    group "build"
+    from(sourceSets.main.output) {
+        exclude "**/hu/openig/launcher/**"
+    }
+    manifest {
+        from "${projectDir}/META-INF/MANIFEST.MF"
+    }
+}
+
+jar.dependsOn(jarLauncher, jarMain)
+
+// TODO: Add deploy task with using PackageStuff and update.xml
+
+dependencies {
+    // testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
+    // testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
+}
+
+test {
+    // useJUnitPlatform()
+}
+
+checkstyleMain {
+    configFile = file("${projectDir}/checkstyle.xml")
+}
+
+eclipse {
+    classpath {
+        defaultOutputDir = file("${compileJava.destinationDir}")
+        file.whenMerged {
+            entries.each { entry ->
+                if (entry.kind == "src" && entry.hasProperty("output")) {
+                    entry.output = file("${projectDir}")
+                            .relativePath(file("${compileJava.destinationDir}"))
+                }
+            }
+        }
+    }
+    project {
+        natures "org.eclipse.jdt.core.javanature",
+                "net.sf.eclipsecs.core.CheckstyleNature",
+                "org.eclipse.buildship.core.gradleprojectnature"
+        buildCommand "org.eclipse.jdt.core.javabuilder"
+        buildCommand "net.sf.eclipsecs.core.CheckstyleBuilder"
+        buildCommand "org.eclipse.buildship.core.gradleprojectbuilder"
+    }
+    jdt.file.withProperties { properties ->
+        // set properties for the file org.eclipse.jdt.core.prefs
+        properties.putAll([
+                "org.eclipse.jdt.core.compiler.annotation.missingNonNullByDefaultAnnotation"                     : "ignore",
+                "org.eclipse.jdt.core.compiler.annotation.nonnull"                                               : "org.eclipse.jdt.annotation.NonNull",
+                "org.eclipse.jdt.core.compiler.annotation.nonnullbydefault"                                      : "org.eclipse.jdt.annotation.NonNullByDefault",
+                "org.eclipse.jdt.core.compiler.annotation.nullable"                                              : "org.eclipse.jdt.annotation.Nullable",
+                "org.eclipse.jdt.core.compiler.annotation.nullanalysis"                                          : "disabled",
+                "org.eclipse.jdt.core.compiler.problem.annotationSuperInterface"                                 : "warning",
+                "org.eclipse.jdt.core.compiler.problem.assertIdentifier"                                         : "error",
+                "org.eclipse.jdt.core.compiler.problem.autoboxing"                                               : "ignore",
+                "org.eclipse.jdt.core.compiler.problem.comparingIdentical"                                       : "warning",
+                "org.eclipse.jdt.core.compiler.problem.deadCode"                                                 : "ignore",
+                "org.eclipse.jdt.core.compiler.problem.deprecation"                                              : "warning",
+                "org.eclipse.jdt.core.compiler.problem.deprecationInDeprecatedCode"                              : "disabled",
+                "org.eclipse.jdt.core.compiler.problem.deprecationWhenOverridingDeprecatedMethod"                : "disabled",
+                "org.eclipse.jdt.core.compiler.problem.discouragedReference"                                     : "warning",
+                "org.eclipse.jdt.core.compiler.problem.emptyStatement"                                           : "ignore",
+                "org.eclipse.jdt.core.compiler.problem.enumIdentifier"                                           : "error",
+                "org.eclipse.jdt.core.compiler.problem.explicitlyClosedAutoCloseable"                            : "warning",
+                "org.eclipse.jdt.core.compiler.problem.fallthroughCase"                                          : "ignore",
+                "org.eclipse.jdt.core.compiler.problem.fatalOptionalError"                                       : "disabled",
+                "org.eclipse.jdt.core.compiler.problem.fieldHiding"                                              : "ignore",
+                "org.eclipse.jdt.core.compiler.problem.finalParameterBound"                                      : "warning",
+                "org.eclipse.jdt.core.compiler.problem.finallyBlockNotCompletingNormally"                        : "warning",
+                "org.eclipse.jdt.core.compiler.problem.forbiddenReference"                                       : "error",
+                "org.eclipse.jdt.core.compiler.problem.hiddenCatchBlock"                                         : "warning",
+                "org.eclipse.jdt.core.compiler.problem.includeNullInfoFromAsserts"                               : "disabled",
+                "org.eclipse.jdt.core.compiler.problem.incompatibleNonInheritedInterfaceMethod"                  : "warning",
+                "org.eclipse.jdt.core.compiler.problem.incompleteEnumSwitch"                                     : "warning",
+                "org.eclipse.jdt.core.compiler.problem.indirectStaticAccess"                                     : "ignore",
+                "org.eclipse.jdt.core.compiler.problem.localVariableHiding"                                      : "ignore",
+                "org.eclipse.jdt.core.compiler.problem.methodWithConstructorName"                                : "warning",
+                "org.eclipse.jdt.core.compiler.problem.missingDefaultCase"                                       : "ignore",
+                "org.eclipse.jdt.core.compiler.problem.missingDeprecatedAnnotation"                              : "ignore",
+                "org.eclipse.jdt.core.compiler.problem.missingEnumCaseDespiteDefault"                            : "disabled",
+                "org.eclipse.jdt.core.compiler.problem.missingHashCodeMethod"                                    : "warning",
+                "org.eclipse.jdt.core.compiler.problem.missingOverrideAnnotation"                                : "warning",
+                "org.eclipse.jdt.core.compiler.problem.missingOverrideAnnotationForInterfaceMethodImplementation": "enabled",
+                "org.eclipse.jdt.core.compiler.problem.missingSerialVersion"                                     : "warning",
+                "org.eclipse.jdt.core.compiler.problem.missingSynchronizedOnInheritedMethod"                     : "ignore",
+                "org.eclipse.jdt.core.compiler.problem.noEffectAssignment"                                       : "warning",
+                "org.eclipse.jdt.core.compiler.problem.noImplicitStringConversion"                               : "warning",
+                "org.eclipse.jdt.core.compiler.problem.nonExternalizedStringLiteral"                             : "ignore",
+                "org.eclipse.jdt.core.compiler.problem.nullAnnotationInferenceConflict"                          : "error",
+                "org.eclipse.jdt.core.compiler.problem.nullReference"                                            : "warning",
+                "org.eclipse.jdt.core.compiler.problem.nullSpecViolation"                                        : "error",
+                "org.eclipse.jdt.core.compiler.problem.nullUncheckedConversion"                                  : "warning",
+                "org.eclipse.jdt.core.compiler.problem.overridingPackageDefaultMethod"                           : "warning",
+                "org.eclipse.jdt.core.compiler.problem.parameterAssignment"                                      : "ignore",
+                "org.eclipse.jdt.core.compiler.problem.possibleAccidentalBooleanAssignment"                      : "ignore",
+                "org.eclipse.jdt.core.compiler.problem.potentialNullReference"                                   : "ignore",
+                "org.eclipse.jdt.core.compiler.problem.potentiallyUnclosedCloseable"                             : "ignore",
+                "org.eclipse.jdt.core.compiler.problem.rawTypeReference"                                         : "warning",
+                "org.eclipse.jdt.core.compiler.problem.redundantNullAnnotation"                                  : "warning",
+                "org.eclipse.jdt.core.compiler.problem.redundantNullCheck"                                       : "ignore",
+                "org.eclipse.jdt.core.compiler.problem.redundantSpecificationOfTypeArguments"                    : "warning",
+                "org.eclipse.jdt.core.compiler.problem.redundantSuperinterface"                                  : "ignore",
+                "org.eclipse.jdt.core.compiler.problem.reportMethodCanBePotentiallyStatic"                       : "ignore",
+                "org.eclipse.jdt.core.compiler.problem.reportMethodCanBeStatic"                                  : "warning",
+                "org.eclipse.jdt.core.compiler.problem.specialParameterHidingField"                              : "disabled",
+                "org.eclipse.jdt.core.compiler.problem.staticAccessReceiver"                                     : "warning",
+                "org.eclipse.jdt.core.compiler.problem.suppressOptionalErrors"                                   : "disabled",
+                "org.eclipse.jdt.core.compiler.problem.suppressWarnings"                                         : "enabled",
+                "org.eclipse.jdt.core.compiler.problem.syntheticAccessEmulation"                                 : "ignore",
+                "org.eclipse.jdt.core.compiler.problem.typeParameterHiding"                                      : "warning",
+                "org.eclipse.jdt.core.compiler.problem.unavoidableGenericTypeProblems"                           : "disabled",
+                "org.eclipse.jdt.core.compiler.problem.uncheckedTypeOperation"                                   : "warning",
+                "org.eclipse.jdt.core.compiler.problem.unclosedCloseable"                                        : "warning",
+                "org.eclipse.jdt.core.compiler.problem.undocumentedEmptyBlock"                                   : "ignore",
+                "org.eclipse.jdt.core.compiler.problem.unhandledWarningToken"                                    : "warning",
+                "org.eclipse.jdt.core.compiler.problem.unnecessaryElse"                                          : "warning",
+                "org.eclipse.jdt.core.compiler.problem.unnecessaryTypeCheck"                                     : "warning",
+                "org.eclipse.jdt.core.compiler.problem.unqualifiedFieldAccess"                                   : "ignore",
+                "org.eclipse.jdt.core.compiler.problem.unusedDeclaredThrownException"                            : "ignore",
+                "org.eclipse.jdt.core.compiler.problem.unusedDeclaredThrownExceptionExemptExceptionAndThrowable" : "enabled",
+                "org.eclipse.jdt.core.compiler.problem.unusedDeclaredThrownExceptionIncludeDocCommentReference"  : "enabled",
+                "org.eclipse.jdt.core.compiler.problem.unusedDeclaredThrownExceptionWhenOverriding"              : "disabled",
+                "org.eclipse.jdt.core.compiler.problem.unusedImport"                                             : "warning",
+                "org.eclipse.jdt.core.compiler.problem.unusedLabel"                                              : "warning",
+                "org.eclipse.jdt.core.compiler.problem.unusedLocal"                                              : "warning",
+                "org.eclipse.jdt.core.compiler.problem.unusedObjectAllocation"                                   : "ignore",
+                "org.eclipse.jdt.core.compiler.problem.unusedParameter"                                          : "ignore",
+                "org.eclipse.jdt.core.compiler.problem.unusedParameterIncludeDocCommentReference"                : "enabled",
+                "org.eclipse.jdt.core.compiler.problem.unusedParameterWhenImplementingAbstract"                  : "disabled",
+                "org.eclipse.jdt.core.compiler.problem.unusedParameterWhenOverridingConcrete"                    : "disabled",
+                "org.eclipse.jdt.core.compiler.problem.unusedPrivateMember"                                      : "warning",
+                "org.eclipse.jdt.core.compiler.problem.unusedWarningToken"                                       : "warning",
+                "org.eclipse.jdt.core.compiler.problem.varargsArgumentNeedCast"                                  : "warning",
+        ])
+    }
+}

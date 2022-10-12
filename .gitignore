@@ -5,6 +5,15 @@
 open-ig.log
 /save/
 /videos/
-*.iml
-.idea
 target
+
+.idea/**
+*.iml
+*.ipr
+
+.settings/**
+.classpath
+.project
+
+build/
+.gradle/

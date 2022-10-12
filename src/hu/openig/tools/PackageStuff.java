@@ -118,7 +118,13 @@ public final class PackageStuff {
                 new BufferedOutputStream(
                         new FileOutputStream(fileName), 1024 * 1024))) {
             zout.setLevel(9);
-            processDirectory("." + sep + "bin" + sep + "", "." + sep + "bin", zout, new FilenameFilter() {
+            processDirectory(
+                    "." + sep + "build" + sep + "classes"
+                            + sep + "java" + sep + "main" + sep,
+                    "." + sep + "build" + sep + "classes"
+                            + sep + "java" + sep + "main",
+                    zout,
+                    new FilenameFilter() {
 
                 @Override
                 public boolean accept(File dir, String name) {
@@ -181,7 +187,13 @@ public final class PackageStuff {
                 new BufferedOutputStream(
                         new FileOutputStream(fileName), 1024 * 1024))) {
             zout.setLevel(9);
-            processDirectory("." + sep + "bin" + sep + "", "." + sep + "bin", zout, new FilenameFilter() {
+            processDirectory(
+                    "." + sep + "build" + sep + "classes"
+                            + sep + "java" + sep + "main" + sep,
+                    "." + sep + "build" + sep + "classes"
+                            + sep + "java" + sep + "main",
+                    zout,
+                    new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String name) {
                     String d = dir.toString().replace('\\', '/');
